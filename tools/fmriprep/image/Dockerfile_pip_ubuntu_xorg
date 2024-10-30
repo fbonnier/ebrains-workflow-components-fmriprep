@@ -1,0 +1,181 @@
+# FROM ubuntu:22.04
+# ENV DEBIAN_FRONTEND=noninteractive
+# WORKDIR /usr/src/app
+# SHELL ["/bin/bash", "-c"]
+
+# COPY apt_requirements.txt apt_requirements.txt
+# RUN apt update && apt upgrade -y
+# RUN xargs apt-get -y install < apt_requirements.txt
+
+# COPY requirements.txt requirements.txt
+# RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+# # Install ANTS
+# RUN wget --no-verbose https://github.com/ANTsX/ANTs/releases/download/v2.5.3/ants-2.5.3-ubuntu-22.04-X64-gcc.zip
+# RUN unzip ants-2.5.3-ubuntu-22.04-X64-gcc.zip
+# ENV ANTS_HOME="/usr/src/app/ants-2.5.3"
+
+
+# # RUN wget --no-verbose https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.4.1/freesurfer_ubuntu22-7.4.1_amd64.deb
+# # RUN dpkg -i freesurfer_ubuntu22-7.4.1_amd64.deb
+# # ENV FREESURFER_HOME="/usr/local/freesurfer/7.4.1"
+# # ENV FSFAST_HOME="$FREESURFER_HOME/fsfast"
+# # ENV FSF_OUTPUT_FORMAT="nii.gz"
+# # ENV SUBJECTS_DIR="$FREESURFER_HOME/subjects"
+# # ENV MNI_DIR="$FREESURFER_HOME/mni"
+# # ENV FSLOUTPUTTYPE="NIFTI"
+# # RUN source $FREESURFER_HOME/SetUpFreeSurfer.sh
+# # RUN ls -al /usr/local/freesurfer
+
+
+# # Install FreeSurfer
+# RUN wget --no-verbose https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.4.1/freesurfer-linux-ubuntu22_amd64-7.4.1.tar.gz
+# RUN tar -zxpf freesurfer-linux-ubuntu22_amd64-7.4.1.tar.gz
+
+# # Install MSM
+# RUN wget --no-verbose https://github.com/ecr05/MSM_HOCR/releases/download/v3.0FSL/msm_ubuntu_v3
+# RUN chmod +x ./msm_ubuntu_v3
+
+# # Install FSL
+# RUN wget --no-verbose https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/releases/fslinstaller.py
+# RUN python3 fslinstaller.py --skip_registration --dest /usr/src/app/fsl
+# ENV FSL_HOME="/usr/src/app/fsl"
+# RUN source ${FSL_HOME}/etc/fslconf/fsl.sh
+# # ENV FSLDEVDIR="/usr/src/app/fsldevdir"
+# # RUN mkdir -p  $FSLDEVDIR  $FSLDEVDIR/extras $FSLDEVDIR/extras/include $FSLDEVDIR/extras/src
+
+# ENV FREESURFER_HOME="/usr/src/app/freesurfer"
+# COPY license.txt $FREESURFER_HOME/license.txt 
+
+# ENV FSFAST_HOME="$FREESURFER_HOME/fsfast"
+# ENV FSF_OUTPUT_FORMAT="nii.gz"
+# ENV SUBJECTS_DIR="$FREESURFER_HOME/subjects"
+# ENV MNI_DIR="$FREESURFER_HOME/mni"
+# ENV FSLOUTPUTTYPE="NIFTI"
+# RUN source $FREESURFER_HOME/SetUpFreeSurfer.sh
+
+# ENV PATH="$FREESURFER_HOME/bin:$PATH"
+# ENV LD_LIBRARY_PATH="$FREESURFER_HOME/lib"
+# ENV PATH="$ANTS_HOME/bin:$PATH"
+# ENV LD_LIBRARY_PATH="$ANTS_HOME/lib:$LD_LIBRARY_PATH"
+# ENV PATH="$FSL_HOME/bin:$PATH"
+# ENV LD_LIBRARY_PATH="$FSL_HOME/lib:$LD_LIBRARY_PATH"
+# ENV PATH="$FSFAST_HOME/bin:$PATH"
+# ENV LD_LIBRARY_PATH="$FSFAST_HOME/lib:$LD_LIBRARY_PATH"
+# ENV PATH="/usr/src/app:$PATH"
+
+# CMD [ "/bin/sh" ]
+
+ 
+
+# ====== FMRIPREP ======= #
+# Build stage with Spack pre-installed and ready to be used
+FROM nipreps/fmriprep:latest AS fmriprep-builder
+
+RUN apt update && apt install -y wget
+
+# Get MSM binary
+RUN mkdir /opt/MSM
+RUN cd /opt/MSM; wget --no-verbose https://github.com/ecr05/MSM_HOCR/releases/download/v3.0FSL/msm_ubuntu_v3
+RUN mv /opt/MSM/msm_ubuntu_v3 /opt/MSM/msm; chmod +x /opt/MSM/msm
+
+# Bare OS image to run the installed executables
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /usr/src/app
+
+RUN apt update; apt-get install -y software-properties-common
+RUN add-apt-repository ppa:zeehio/libxp
+RUN add-apt-repository ppa:linuxuprising/libpng12
+RUN apt-get update && apt-get install -y gfortran curl datalad libxft2 libxext6 libxp6 libxt6 libxmu6 libpng12-0 csh tcsh bc
+
+# Copy tools from fMRIPrep
+COPY --from=fmriprep-builder /opt/freesurfer /opt/freesurfer
+COPY --from=fmriprep-builder /opt/afni-latest /opt/afni-latest
+COPY --from=fmriprep-builder /opt/workbench /opt/workbench
+COPY --from=fmriprep-builder /usr/bin/c3d_affine_tool /usr/bin/c3d_affine_tool
+COPY --from=fmriprep-builder /bin/micromamba /bin/micromamba
+COPY --from=fmriprep-builder /opt/conda/envs/fmriprep /opt/conda/envs/fmriprep
+COPY --from=fmriprep-builder /opt/MSM /opt/MSM
+
+# paths.view is a symlink, so copy the parent to avoid dereferencing and duplicating it
+
+ENV FMRIPREP_HOME="/opt/conda/envs/fmriprep"
+ENV AFNI_HOME="/opt/afni-latest"
+ENV WORKBENCH_HOME="/opt/workbench"
+ENV PATH="$AFNI_HOME:$PATH"
+ENV PATH="$WORKBENCH_HOME/bin_linux64:$PATH"
+ENV LD_LIBRARY_PATH="$WORKBENCH_HOME/libs_linux64"
+
+ENV FREESURFER_HOME="/opt/freesurfer"
+ENV FSFAST_HOME="$FREESURFER_HOME/fsfast"
+ENV FSF_OUTPUT_FORMAT="nii.gz"
+ENV SUBJECTS_DIR="$FREESURFER_HOME/subjects"
+ENV MNI_DIR="$FREESURFER_HOME/mni"
+
+# FreeSurfer License
+COPY license.txt $FREESURFER_HOME/license.txt
+
+# AFNI config
+ENV PATH="/opt/afni-latest:$PATH" \
+    AFNI_IMSAVE_WARNINGS="NO" \
+    AFNI_PLUGINPATH="/opt/afni-latest"
+
+# Workbench config
+ENV PATH="/opt/workbench/bin_linux64:$PATH" \
+    LD_LIBRARY_PATH="/opt/workbench/lib_linux64:$LD_LIBRARY_PATH"
+
+# FSL - MSM (https://github.com/ecr05/MSM_HOCR/blob/master/compilation%20instructions)
+ENV FSLDIR="$FMRIPREP_HOME"
+ENV FSLOUTPUTTYPE="NIFTI_GZ"
+ENV FSLMULTIFILEQUIT="TRUE"
+ENV FSLLOCKDIR=""
+ENV FSLMACHINELIST=""
+ENV FSLREMOTECALL=""
+ENV FSLGECUDAQ="cuda.q"
+ENV FSLDEVDIR="$FSLDIR"
+ENV MSM_HOME="/opt/MSM"
+ENV LOCAL_DIR="$FREESURFER_HOME/local"
+ENV FIX_VERTEX_AREA=""
+ENV FS_OVERRIDE=0
+ENV OS="Linux"
+ENV FUNCTIONALS_DIR="$FREESURFER_HOME/sessions"
+ENV MINC_BIN_DIR="$FREESURFER_HOME/mni/bin"
+ENV MINC_LIB_DIR="$FREESURFER_HOME/mni/lib"
+ENV MNI_DATAPATH="$FREESURFER_HOME/mni/data"
+ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5"
+ENV MNI_PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5"
+ENV PATH="$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH"
+ENV PATH="$FMRIPREP_HOME/bin:$PATH"
+ENV CPATH="$FMRIPREP_HOME/include"
+ENV LD_LIBRARY_PATH="$FMRIPREP_HOME/lib:$LD_LIBRARY_PATH"
+ENV PATH="$MSM_HOME:$PATH"
+
+# FSL environment
+ENV LANG="C.UTF-8" \
+    LC_ALL="C.UTF-8" \
+    PYTHONNOUSERSITE=1 \
+    FSLDIR="/opt/conda/envs/fmriprep" \
+    FSLOUTPUTTYPE="NIFTI_GZ" \
+    FSLMULTIFILEQUIT="TRUE" \
+    FSLLOCKDIR="" \
+    FSLMACHINELIST="" \
+    FSLREMOTECALL="" \
+    FSLGECUDAQ="cuda.q"
+
+# Unless otherwise specified each process should only use one thread - nipype
+# will handle parallelization
+ENV MKL_NUM_THREADS=1 \
+    OMP_NUM_THREADS=1
+
+CMD [ "/bin/sh" ]
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+spack:
+  specs:
+    - py-datalad
+    - libxft
+    - libxext
+    - libxp
+    - libxt
+    - libxmu
+    - libpng
+    - curl
+  concretizer:
+    unify: true
+  config:
+    install_tree: /opt/software
+  view: /opt/views/view

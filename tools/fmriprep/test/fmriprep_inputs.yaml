@@ -1,0 +1,24 @@
+bids_path:
+  class: Directory
+  path: ../../../../TEST/fmriprep/inputs/openneuro.ds000254.v1.0.0 #1 Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/inputs/openneuro.ds004996.v1.0.1 #2 No BOLD images found; No such file or directory: 'mri_convert'
+  # path: ../../../../TEST/fmriprep/inputs/openneuro.ds004993-1.1.2 #3 No BOLD images found; No such file or directory: 'mri_convert'
+  # path: ../../../../TEST/fmriprep/inputs/openneuro.ds005422-1.0.1 #4 No BOLD images found; Exception: Some connections were not found Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/inputs/openneuro.ds004131-1.0.1 #5 No BOLD images found; Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/inputs/openneuro.ds004130-1.0.0 #6 No BOLD images found; Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/inputs/ds000001 #https://github.com/OpenNeuroDatasets/ds000001/archive/refs/tags/1.0.0.tar.gz
+
+derivatives_path:
+  class: Directory
+  path: ../../../../TEST/fmriprep/outputs/openneuro.ds000254.v1.0.0 #1 Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/outputs/openneuro.ds004996.v1.0.1 #2 No BOLD images found; No such file or directory: 'mri_convert'
+  # path: ../../../../TEST/fmriprep/outputs/openneuro.ds004993-1.1.2 #3 No BOLD images found; No such file or directory: 'mri_convert'
+  # path: ../../../../TEST/fmriprep/outputs/openneuro.ds005422-1.0.1 #4 No BOLD images found; Exception: Some connections were not found Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/outputs/openneuro.ds004131-1.0.1 #5 No BOLD images found; Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/outputs/openneuro.ds004130-1.0.0 #6  No BOLD images found; Module ds_std_volumes_wf has no input called inputnode.t1w_preproc
+  # path: ../../../../TEST/fmriprep/outputs/ds000001/derivatives #https://github.com/OpenNeuroDatasets/ds000001/archive/refs/tags/1.0.0.tar.gz
+
+
+analysis_level: "participant"
+
+named_options: ["--skip_bids_validation"]

@@ -1,0 +1,11 @@
+bids_validator
+sentry-sdk
+pyfreesurfer
+nipype
+fslpy
+fslutils
+c3d
+antspyx
+PySocks
+
+fmriprep==24.1.0
