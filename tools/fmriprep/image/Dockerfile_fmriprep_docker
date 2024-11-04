@@ -71,7 +71,9 @@ WORKDIR /usr/src/app
 RUN apt update; apt-get install -y software-properties-common
 RUN add-apt-repository ppa:zeehio/libxp
 RUN add-apt-repository ppa:linuxuprising/libpng12
-RUN apt-get update && apt-get install -y gfortran curl datalad libxft2 libxext6 libxp6 libxt6 libxmu6 libpng12-0 csh tcsh
+COPY apt_requirements.txt apt_requirements.txt
+RUN apt-get update && xargs apt-get -y install < apt_requirements.txt
+# RUN apt-get update && apt-get install -y gfortran curl datalad libxft2 libxext6 libxp6 libxt6 libxmu6 libpng12-0 csh tcsh
 
 # Copy tools from SPACK
 COPY --from=builder /opt/spack-environment /opt/spack-environment

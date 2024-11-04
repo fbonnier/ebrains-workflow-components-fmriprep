@@ -55,8 +55,7 @@ libxss1
 libxt6
 connectome-workbench
 datalad
-csh
-tcsh
+libxp6
 
 xfonts-base
 libssl-dev
