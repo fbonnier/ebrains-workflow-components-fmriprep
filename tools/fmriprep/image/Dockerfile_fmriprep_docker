@@ -135,11 +135,9 @@ RUN { \
       && echo 'PATH="$FMRIPREP_HOME/bin:$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$MSM_HOME:$WORKBENCH_HOME/bin_linux64:$AFNI_HOME:$PATH"' \
       && echo 'CPATH="$FMRIPREP_HOME/include"' \
       && echo 'LD_LIBRARY_PATH="$FMRIPREP_HOME/lib:$WORKBENCH_HOME/lib_linux64:$LD_LIBRARY_PATH"' \
-      # && echo 'PATH="$MSM_HOME:$PATH"' \
       && echo 'PATH="$AFNI_HOME:$PATH"' \
       && echo 'AFNI_IMSAVE_WARNINGS="NO"' \
       && echo 'AFNI_PLUGINPATH="$AFNI_HOME"' \
-      # && echo 'PATH="$WORKBENCH_HOME/bin_linux64:$PATH"' \
       && echo 'LANG="C.UTF-8"' \
       && echo 'LC_ALL="C.UTF-8"' \
       && echo 'PYTHONNOUSERSITE=1' \
@@ -161,15 +159,9 @@ RUN { \
       && echo 'MINC_BIN_DIR="$FREESURFER_HOME/mni/bin"' \
       && echo 'MINC_LIB_DIR="$FREESURFER_HOME/mni/lib"' \
       && echo 'MNI_DATAPATH="$FREESURFER_HOME/mni/data"' \
-    #   && echo '.' $FREESURFER_HOME/SetUpFreeSurfer.sh \
       && echo 'PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5"' \
       && echo 'MNI_PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5"' \
       && echo 'FSFAST_HOME="$FREESURFER_HOME/fsfast"' \
-      # && echo '' \
-      # && echo '' \
-      # && echo '' \
-      # && echo '' \
-      # && echo 'PATH="$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH"' \
       && echo 'exec "$@"'; \
     } > /usr/src/app/entrypoint.sh \
 && chmod a+x /usr/src/app/entrypoint.sh \
